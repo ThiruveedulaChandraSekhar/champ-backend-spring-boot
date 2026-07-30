@@ -12,35 +12,29 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDetails {
+public class DoctorDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String fullName;
-    private String gender;
-    private String emergencyContact;
-    private String email;
-    private String guardian;
-    private String guardianContact;
+    private String hospitalName;
+    private String specialization;
     private LocalDate dateOfBirth;
-    private LocalDate lastUpdated;
-    private LocalDate created;
-    private String bloodGroup;
+    private String gender;
+    private String yearOfRegistration;
+    private String medicalCouncilState;
+    private String registrationNumber;
     private Boolean verificationStatus;
     private String personalImage;
-    @Lob
-    private byte[] template;
-
-    @OneToOne(mappedBy = "userDetails", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Address address;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private User user;
 
-    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "doctorDetails", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Allergy> allergies;
 
-    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "doctorDetails", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Visit> visits;
+
 }

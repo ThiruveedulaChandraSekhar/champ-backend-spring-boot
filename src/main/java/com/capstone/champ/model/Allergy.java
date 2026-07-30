@@ -5,23 +5,30 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
-public class User {
+public class Allergy {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String aadhaarNumber;
-    private String mobileNumber;
-    private String password;
-    private String role;
+    private String title;
+    private String description;
+    private LocalDate date;
+    private Short severity;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne
+    @JoinColumn(name = "user_details_id")
     private UserDetails userDetails;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne
+    @JoinColumn(name = "doctor_details_id")
     private DoctorDetails doctorDetails;
+
+    @ManyToOne
+    @JoinColumn(name = "visit_id")
+    private Visit visit;
 }
