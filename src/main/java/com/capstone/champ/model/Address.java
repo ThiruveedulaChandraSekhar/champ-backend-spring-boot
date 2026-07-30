@@ -7,17 +7,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
-public class User {
+@AllArgsConstructor
+public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
-    private String password;
-    private String role;
+    private String pinCode;
+    private String doorNumber;
+    private String street;
+    private String city;
+    private String state;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne
+    @JoinColumn(name = "user_details_id")
     private UserDetails userDetails;
 }
