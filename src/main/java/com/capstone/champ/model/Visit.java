@@ -16,7 +16,8 @@ public class Visit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String reason;
-    private LocalDate date;
+    private LocalDate issueDate;
+    private LocalDate recoveredDate;
     private String prescriptionImage;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
