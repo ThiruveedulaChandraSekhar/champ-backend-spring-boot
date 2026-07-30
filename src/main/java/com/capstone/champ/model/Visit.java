@@ -21,14 +21,14 @@ public class Visit {
     private String prescriptionImage;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Prescription> prescriptions;
+    private List<Medicine> medicines;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Allergy> allergies;
 
     @ManyToOne
-    @JoinColumn(name = "user_details_id")
-    private UserDetails userDetails;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "doctor_details_id")

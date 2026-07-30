@@ -38,9 +38,4 @@ public class UserDetails {
     @JoinColumn(name = "user_id", unique = true)
     private User user;
 
-    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Allergy> allergies;
-
-    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Visit> visits;
 }

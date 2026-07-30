@@ -21,8 +21,8 @@ public class Allergy {
     private Short severity;
 
     @ManyToOne
-    @JoinColumn(name = "user_details_id")
-    private UserDetails userDetails;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "doctor_details_id")
