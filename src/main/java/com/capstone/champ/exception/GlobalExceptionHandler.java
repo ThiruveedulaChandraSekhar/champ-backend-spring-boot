@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> passwordIncorrectExceptionHandler(Exception e) {
         return new ResponseEntity<>(new ExceptionResponse(false, e.getMessage()), HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(PhoneNumberNotFoundException.class)
+    @ExceptionHandler(MobileNumberNotFoundException.class)
     public ResponseEntity<ExceptionResponse> phoneNumberNotFoundExceptionHandler(Exception e) {
         return new ResponseEntity<>(new ExceptionResponse(false, e.getMessage()), HttpStatus.NOT_FOUND);
     }
