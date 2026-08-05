@@ -3,9 +3,14 @@ package com.capstone.champ.service;
 import com.capstone.champ.exception.*;
 import com.capstone.champ.model.Role;
 import com.capstone.champ.model.User;
+import com.capstone.champ.payload.GeneralResponse;
 import com.capstone.champ.payload.authentication.*;
+import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
+import com.capstone.champ.payload.userdetails.UserDetailsDTO;
 import com.capstone.champ.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.sql.ast.tree.expression.XmlTableOrdinalityColumnDefinition;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,6 +22,7 @@ import java.util.Optional;
 public class AuthenticationServiceImpl implements AuthenticationService{
 
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public SignupResponse signup(SignupRequest signupRequest) {
@@ -72,6 +78,32 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         User user = getUser(input);
         userRepository.delete(user);
         return new DeleteResponse(true, "User deleted successfully");
+    }
+
+    @Override
+    public GeneralResponse verifyUser(String aadhaarNumber) {
+        User user = getUser(aadhaarNumber);
+        user.setVerificationStatus(true);
+        userRepository.save(user);
+        return new GeneralResponse(true, "User verified successfully");
+    }
+
+    @Override
+    public List<DoctorDetailsDTO> getPendingDoctors() {
+        return userRepository.findByRoleAndVerificationStatus(Role.DOCTOR.toString(), false)
+                .stream()
+                .map(User::getDoctorDetails)
+                .map(doctorDetails -> modelMapper.map(doctorDetails, DoctorDetailsDTO.class))
+                .toList();
+    }
+
+    @Override
+    public List<UserDetailsDTO> getPendingUsers() {
+        return userRepository.findByRoleAndVerificationStatus(Role.USER.toString(), false)
+                .stream()
+                .map(User::getUserDetails)
+                .map(userDetails -> modelMapper.map(userDetails, UserDetailsDTO.class))
+                .toList();
     }
 
 
