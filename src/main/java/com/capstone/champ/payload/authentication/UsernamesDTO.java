@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
+@AllArgsConstructor
+public class UsernamesDTO {
     private Boolean status;
     private String message;
-    private String input;
-    private String role;
-    private Boolean verificationStatus;
+    private List<AadhaarDetailsDTO> aadhaarNumbers;
 }

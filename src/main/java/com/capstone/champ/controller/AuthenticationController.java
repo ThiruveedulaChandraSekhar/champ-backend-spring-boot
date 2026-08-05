@@ -1,9 +1,9 @@
 package com.capstone.champ.controller;
 
 import com.capstone.champ.payload.authentication.LoginRequest;
-import com.capstone.champ.payload.authentication.LoginResponse;
 import com.capstone.champ.payload.authentication.SignupRequest;
 import com.capstone.champ.payload.authentication.SignupResponse;
+import com.capstone.champ.payload.authentication.UsernamesDTO;
 import com.capstone.champ.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,8 +25,13 @@ public class AuthenticationController {
         return new ResponseEntity<>(authenticationService.signup(signupRequest), HttpStatus.CREATED);
     }
 
+    @PostMapping("/get-aadhaar-details")
+    public ResponseEntity<UsernamesDTO> getAadhaarDetailsByMobileNumber(String mobileNumber) {
+        return new ResponseEntity<>(authenticationService.getAadhaarDetailsByMobileNumber(mobileNumber), HttpStatus.OK);
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         return new ResponseEntity<>(authenticationService.login(loginRequest), HttpStatus.OK);
     }
 }

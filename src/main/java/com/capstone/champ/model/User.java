@@ -20,6 +20,7 @@ public class User {
     private String mobileNumber;
     private String password;
     private String role;
+    private Boolean verificationStatus;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserDetails userDetails;

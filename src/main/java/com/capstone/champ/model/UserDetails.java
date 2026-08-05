@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,11 +20,10 @@ public class UserDetails {
     private String email;
     private String guardian;
     private String guardianContact;
-    private LocalDate dateOfBirth;
-    private LocalDate lastUpdated;
-    private LocalDate created;
+    private LocalDateTime dateOfBirth;
+    private LocalDateTime lastUpdated;
+    private LocalDateTime created;
     private String bloodGroup;
-    private Boolean verificationStatus;
     private String personalImage;
     @Lob
     private byte[] template;

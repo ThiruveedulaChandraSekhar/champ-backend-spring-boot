@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
+public class DeleteResponse {
     private Boolean status;
     private String message;
-    private String input;
-    private String role;
-    private Boolean verificationStatus;
 }

@@ -24,7 +24,6 @@ public class DoctorDetails {
     private String yearOfRegistration;
     private String medicalCouncilState;
     private String registrationNumber;
-    private Boolean verificationStatus;
     private String personalImage;
 
     @OneToOne
