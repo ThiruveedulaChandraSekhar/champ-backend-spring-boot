@@ -35,7 +35,7 @@ public class DoctorServiceImpl implements DoctorService{
     public DoctorDetailsResponse updateDoctorDetails(DoctorDetailsDTO doctorDetailsDTO) {
 
         DoctorDetails doctorDetails = doctorDetailsRepository.findById(doctorDetailsDTO.getId())
-                .orElseThrow(() -> new DoctorDetailsNotFoundException());
+                .orElseThrow(DoctorDetailsNotFoundException::new);
         modelMapper.map(doctorDetailsDTO, doctorDetails);
         doctorDetailsRepository.save(doctorDetails);
         return new DoctorDetailsResponse(true, "Doctor details updated successfully");
@@ -47,13 +47,6 @@ public class DoctorServiceImpl implements DoctorService{
         if (doctor.getDoctorDetails() == null)
             throw new DoctorDetailsNotFoundException();
         return modelMapper.map(doctor.getDoctorDetails(), DoctorDetailsDTO.class);
-    }
-
-    @Override
-    public DoctorDetailsResponse verifyDoctor(String input) {
-        User doctor = authenticationService.getUser(input);
-        doctor.setVerificationStatus(true);
-        return new DoctorDetailsResponse(true, "Doctor verified successfully");
     }
 
 

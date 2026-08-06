@@ -8,5 +8,4 @@ public interface DoctorService {
     DoctorDetailsResponse addDoctorDetails(DoctorDetailsRequest doctorDetailsRequest, String input);
     DoctorDetailsResponse updateDoctorDetails(DoctorDetailsDTO doctorDetailsDTO);
     DoctorDetailsDTO getDoctorDetails(String input);
-    DoctorDetailsResponse verifyDoctor(String input);
 }

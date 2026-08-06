@@ -22,7 +22,7 @@ public class AuthenticationController {
         return new ResponseEntity<>(authenticationService.signup(signupRequest), HttpStatus.CREATED);
     }
 
-    @GetMapping("/get-aadhaar-details/{mobileNumber}")
+    @GetMapping("/aadhaar-details/{mobileNumber}")
     public ResponseEntity<UsernamesDTO> getAadhaarDetailsByMobileNumber(@PathVariable String mobileNumber) {
         return new ResponseEntity<>(authenticationService.getAadhaarDetailsByMobileNumber(mobileNumber), HttpStatus.OK);
     }

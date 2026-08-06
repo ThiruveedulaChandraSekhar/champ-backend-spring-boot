@@ -16,17 +16,17 @@ public class DoctorController {
 
     private final DoctorService doctorService;
 
-    @PostMapping("/add-details/{input}")
+    @PostMapping("/details/{input}")
     public ResponseEntity<DoctorDetailsResponse> addDoctorDetails(@RequestBody DoctorDetailsRequest doctorDetailsRequest, @PathVariable String input) {
         return new ResponseEntity<>(doctorService.addDoctorDetails(doctorDetailsRequest, input), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-details")
+    @PutMapping("/details")
     public ResponseEntity<DoctorDetailsResponse> updateDoctorDetails(@RequestBody DoctorDetailsDTO doctorDetailsDTO) {
         return new ResponseEntity<>(doctorService.updateDoctorDetails(doctorDetailsDTO), HttpStatus.OK);
     }
 
-    @GetMapping("/get-details/{input}")
+    @GetMapping("/details/{input}")
     public ResponseEntity<DoctorDetailsDTO> getDoctorDetails(@PathVariable String input) {
         return new ResponseEntity<>(doctorService.getDoctorDetails(input), HttpStatus.OK);
     }

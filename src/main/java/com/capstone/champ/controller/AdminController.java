@@ -31,7 +31,7 @@ public class AdminController {
         return new ResponseEntity<>(authenticationService.deleteUser(input), HttpStatus.OK);
     }
 
-    @GetMapping("get-verification-pending/{input}")
+    @GetMapping("verification-pending/{input}")
     public ResponseEntity<?> getListOfUsers(@PathVariable String input) {
         if(input.equals(Role.DOCTOR.toString()))
             return new ResponseEntity<>(authenticationService.getPendingDoctors(), HttpStatus.OK);

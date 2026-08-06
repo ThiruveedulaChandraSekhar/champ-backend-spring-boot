@@ -26,6 +26,5 @@ public class UserDetailsRequest {
 //    private LocalDate lastUpdated;
 //    private LocalDate created;
     private String bloodGroup;
-//    private Boolean verificationStatus;
     
 }

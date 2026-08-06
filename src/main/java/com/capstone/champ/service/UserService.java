@@ -7,8 +7,9 @@ import com.capstone.champ.payload.userdetails.UserDetailsRequest;
 import com.capstone.champ.payload.userdetails.UserDetailsResponse;
 
 public interface UserService {
-    UserDetailsResponse addUserDetails(UserDetailsRequest userDetailsRequest);
+    UserDetailsResponse addUserDetails(String aadhaarNumber, UserDetailsRequest userDetailsRequest);
     UserDetailsResponse updateUserDetails(UserDetailsDTO userDetailsDTO);
+    UserDetailsDTO getUserDetails(String aadhaarNumber);
     VisitResponse getVisits(String input);
     AllergyResponse getAllergy(String input);
 }
