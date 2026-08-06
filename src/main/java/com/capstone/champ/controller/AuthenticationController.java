@@ -8,10 +8,7 @@ import com.capstone.champ.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,8 +22,8 @@ public class AuthenticationController {
         return new ResponseEntity<>(authenticationService.signup(signupRequest), HttpStatus.CREATED);
     }
 
-    @PostMapping("/get-aadhaar-details")
-    public ResponseEntity<UsernamesDTO> getAadhaarDetailsByMobileNumber(String mobileNumber) {
+    @GetMapping("/get-aadhaar-details/{mobileNumber}")
+    public ResponseEntity<UsernamesDTO> getAadhaarDetailsByMobileNumber(@PathVariable String mobileNumber) {
         return new ResponseEntity<>(authenticationService.getAadhaarDetailsByMobileNumber(mobileNumber), HttpStatus.OK);
     }
 

@@ -7,10 +7,7 @@ import com.capstone.champ.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -34,7 +31,7 @@ public class AdminController {
         return new ResponseEntity<>(authenticationService.deleteUser(input), HttpStatus.OK);
     }
 
-    @PostMapping("get-verification-pending/{input}")
+    @GetMapping("get-verification-pending/{input}")
     public ResponseEntity<?> getListOfUsers(@PathVariable String input) {
         if(input.equals(Role.DOCTOR.toString()))
             return new ResponseEntity<>(authenticationService.getPendingDoctors(), HttpStatus.OK);
