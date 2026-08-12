@@ -1,6 +1,7 @@
 package com.capstone.champ.controller;
 
 import com.capstone.champ.payload.AllergyResponse;
+import com.capstone.champ.payload.MedicineFeedBackResponse;
 import com.capstone.champ.payload.VisitResponse;
 import com.capstone.champ.payload.userdetails.UserDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsRequest;
@@ -41,6 +42,11 @@ public class UserController {
     @GetMapping("/allergy/{input}")
     public ResponseEntity<AllergyResponse> getAllergies(@PathVariable String input) {
         return new ResponseEntity<>(userService.getAllergy(input), HttpStatus.OK);
+    }
+
+    @GetMapping("/medicine-feed-back/{medicineName}")
+    public ResponseEntity<MedicineFeedBackResponse> getMedicineFeedback(@PathVariable String medicineName) {
+        return new ResponseEntity<>(userService.getMedicineFeedback(medicineName), HttpStatus.OK);
     }
 
 

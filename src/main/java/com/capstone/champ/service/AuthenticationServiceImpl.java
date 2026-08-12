@@ -106,5 +106,16 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 .toList();
     }
 
+    @Override
+    public GeneralResponse addRole(String input, String role) {
+        User user = getUser(input);
+        if(role.equals("DOCTOR"))
+            user.setRole(Role.DOCTOR.toString());
+        else if(role.equals("USER"))
+            user.setRole(Role.USER.toString());
+        userRepository.save(user);
+        return new GeneralResponse(true, "Role added successfully");
+    }
+
 
 }

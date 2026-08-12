@@ -8,8 +8,10 @@ import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsRequest;
 import com.capstone.champ.payload.userdetails.UserDetailsResponse;
+import com.capstone.champ.repository.MedicineRepository;
 import com.capstone.champ.repository.UserDetailsRepository;
 import com.capstone.champ.repository.UserRepository;
+import com.capstone.champ.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class UserServiceImpl implements UserService{
     private final UserDetailsRepository userDetailsRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final MedicineRepository medicineRepository;
 
     @Override
     public UserDetailsResponse addUserDetails(String aadhaarNumber, UserDetailsRequest userDetailsRequest) {
@@ -104,5 +107,19 @@ public class UserServiceImpl implements UserService{
             allergyDTOS.add(allergyDTO);
         }
         return new AllergyResponse(true, "Successfully got allergy details", allergyDTOS);
+    }
+
+    @Override
+    public MedicineFeedBackResponse getMedicineFeedback(String medicineName) {
+        List<Medicine> medicines = medicineRepository.findByMedicineNameContainingIgnoreCase(medicineName);
+        if (medicines.isEmpty())
+            return new MedicineFeedBackResponse("Medicines not found with the name " + medicineName, false, null);
+        MedicineFeedBackResponse medicineFeedBackResponse = new MedicineFeedBackResponse();
+        medicineFeedBackResponse.setStatus(true);
+        medicineFeedBackResponse.setMessage("Medicine feedbacks retrieved successfully");
+        medicineFeedBackResponse.setFeedbacks(new ArrayList<>());
+        for(Medicine medicine : medicines)
+            medicineFeedBackResponse.getFeedbacks().add(new MedicineWithFeedback(medicine.getMedicineName(), medicine.getUserFeedback()));
+        return medicineFeedBackResponse;
     }
 }

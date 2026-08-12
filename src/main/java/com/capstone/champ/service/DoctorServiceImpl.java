@@ -11,6 +11,7 @@ import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsResponse;
 import com.capstone.champ.repository.DoctorDetailsRepository;
 import com.capstone.champ.repository.UserRepository;
+import com.capstone.champ.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class DoctorServiceImpl implements DoctorService{
     private final AuthenticationService authenticationService;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
+    private final VisitRepository visitRepository;
 
     @Override
     public DoctorDetailsResponse addDoctorDetails(DoctorDetailsRequest doctorDetailsRequest, String input) {
@@ -54,13 +56,29 @@ public class DoctorServiceImpl implements DoctorService{
 
     @Override
     public GeneralResponse addVisit(String doctor, String patient, VisitRequest visitRequest) {
+
         User doctorUser = authenticationService.getUser(doctor);
         User patientUser = authenticationService.getUser(patient);
+
         Visit visit = modelMapper.map(visitRequest, Visit.class);
         visit.setDoctorDetails(doctorUser.getDoctorDetails());
         visit.setUser(patientUser);
+        if (visit.getMedicines() != null) {
+            visit.getMedicines().forEach(medicine -> medicine.setVisit(visit));
+        }
+        if (visit.getAllergies() != null) {
+            visit.getAllergies().forEach(allergy -> {
+                allergy.setVisit(visit);
+                allergy.setUser(patientUser);
+                allergy.setDoctorDetails(doctorUser.getDoctorDetails());
+            });
+        }
+        visitRepository.save(visit);
+
         return new GeneralResponse(true, "Visit added successfully");
     }
+
+
 
 
 }

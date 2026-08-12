@@ -5,6 +5,7 @@ import com.capstone.champ.payload.GeneralResponse;
 import com.capstone.champ.payload.authentication.*;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsDTO;
+import org.springframework.http.HttpStatusCode;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ public interface AuthenticationService {
     GeneralResponse verifyUser(String aadhaarNumber);
     List<DoctorDetailsDTO> getPendingDoctors();
     List<UserDetailsDTO> getPendingUsers();
+    GeneralResponse addRole(String input, String role);
 }

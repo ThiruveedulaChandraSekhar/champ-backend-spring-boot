@@ -1,5 +1,6 @@
 package com.capstone.champ.controller;
 
+import com.capstone.champ.payload.GeneralResponse;
 import com.capstone.champ.payload.authentication.LoginRequest;
 import com.capstone.champ.payload.authentication.SignupRequest;
 import com.capstone.champ.payload.authentication.SignupResponse;
@@ -30,5 +31,10 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         return new ResponseEntity<>(authenticationService.login(loginRequest), HttpStatus.OK);
+    }
+
+    @PostMapping("/role/{input}/{role}")
+    public ResponseEntity<GeneralResponse> addRole(@PathVariable String input, @PathVariable String role) {
+        return new ResponseEntity<>(authenticationService.addRole(input, role), HttpStatus.CREATED);
     }
 }
