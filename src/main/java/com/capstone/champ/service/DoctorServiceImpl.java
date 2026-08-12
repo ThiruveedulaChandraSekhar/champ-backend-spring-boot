@@ -3,6 +3,9 @@ package com.capstone.champ.service;
 import com.capstone.champ.exception.DoctorDetailsNotFoundException;
 import com.capstone.champ.model.DoctorDetails;
 import com.capstone.champ.model.User;
+import com.capstone.champ.model.Visit;
+import com.capstone.champ.payload.GeneralResponse;
+import com.capstone.champ.payload.VisitRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsResponse;
@@ -47,6 +50,16 @@ public class DoctorServiceImpl implements DoctorService{
         if (doctor.getDoctorDetails() == null)
             throw new DoctorDetailsNotFoundException();
         return modelMapper.map(doctor.getDoctorDetails(), DoctorDetailsDTO.class);
+    }
+
+    @Override
+    public GeneralResponse addVisit(String doctor, String patient, VisitRequest visitRequest) {
+        User doctorUser = authenticationService.getUser(doctor);
+        User patientUser = authenticationService.getUser(patient);
+        Visit visit = modelMapper.map(visitRequest, Visit.class);
+        visit.setDoctorDetails(doctorUser.getDoctorDetails());
+        visit.setUser(patientUser);
+        return new GeneralResponse(true, "Visit added successfully");
     }
 
 

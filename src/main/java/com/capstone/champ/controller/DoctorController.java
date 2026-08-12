@@ -1,5 +1,6 @@
 package com.capstone.champ.controller;
 
+import com.capstone.champ.payload.VisitRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsResponse;
@@ -30,5 +31,12 @@ public class DoctorController {
     public ResponseEntity<DoctorDetailsDTO> getDoctorDetails(@PathVariable String input) {
         return new ResponseEntity<>(doctorService.getDoctorDetails(input), HttpStatus.OK);
     }
+
+    @PostMapping("/visit/{doctor}/{patient}")
+    public ResponseEntity<?> addVisit(@PathVariable String doctor, @PathVariable String patient, @RequestBody VisitRequest visitRequest) {
+        return new ResponseEntity<>(doctorService.addVisit(doctor, patient, visitRequest), HttpStatus.CREATED);
+    }
+
+
 
 }
