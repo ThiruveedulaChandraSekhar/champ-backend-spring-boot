@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService{
@@ -62,6 +64,7 @@ public class DoctorServiceImpl implements DoctorService{
 
         Visit visit = modelMapper.map(visitRequest, Visit.class);
         visit.setDoctorDetails(doctorUser.getDoctorDetails());
+        visit.setIssueDate(LocalDate.now());
         visit.setUser(patientUser);
         if (visit.getMedicines() != null) {
             visit.getMedicines().forEach(medicine -> medicine.setVisit(visit));

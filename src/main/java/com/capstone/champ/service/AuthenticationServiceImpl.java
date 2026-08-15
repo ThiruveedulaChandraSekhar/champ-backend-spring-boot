@@ -59,7 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         List<AadhaarDetailsDTO> temp = new ArrayList<>();
         for (User user : users) {
             String fullName = user.getUserDetails() != null ? user.getUserDetails().getFullName() : user.getDoctorDetails() != null ? user.getDoctorDetails().getFullName() : null;
-            temp.add(new AadhaarDetailsDTO("********" + user.getAadhaarNumber().substring(8), fullName));
+            temp.add(new AadhaarDetailsDTO(user.getAadhaarNumber(), fullName));
         }
         usernamesDTO.setAadhaarNumbers(temp);
         return usernamesDTO;
