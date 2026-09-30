@@ -36,5 +36,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> userDetailsNotFoundExceptionHandler(Exception e) {
         return new ResponseEntity<>(new ExceptionResponse(false, e.getMessage()), HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(MedicineNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> medicineNotFoundExceptionHandler(Exception e) {
+        return new ResponseEntity<>(new ExceptionResponse(false, e.getMessage()), HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(MlServiceException.class)
+    public ResponseEntity<ExceptionResponse> mlServiceExceptionHandler(Exception e) {
+        return new ResponseEntity<>(new ExceptionResponse(false, e.getMessage()), HttpStatus.BAD_GATEWAY);
+    }
 
 }

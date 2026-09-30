@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MedicineDTO {
     private Long id;
+    private Long medicineId;
     private String medicineName;
     private String dosage;
     private Boolean isInjection;

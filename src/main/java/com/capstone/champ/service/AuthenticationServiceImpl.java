@@ -43,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         User alreadyExistsUser = getUser(loginRequest.getInput());
         if (!alreadyExistsUser.getPassword().equals(loginRequest.getPassword()))
             throw new PasswordIncorrectException();
-        return new LoginResponse(true, "Login successful", loginRequest.getInput(), alreadyExistsUser.getRole(), alreadyExistsUser.getVerificationStatus());
+        return new LoginResponse(true, "Login successful", loginRequest.getInput(), alreadyExistsUser.getRole(), alreadyExistsUser.getVerificationStatus(), alreadyExistsUser.getAadhaarNumber());
     }
 
     @Override
@@ -69,8 +69,12 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     public User getUser(String input) {
         if(input.length() != 10 && input.length() != 12)
             throw new InvalidInputException(input);
-        return userRepository.findByAadhaarNumber(input)
-                    .orElseThrow(() -> new AadhaarNotFoundException(input));
+        Optional<User> byAadhaar = userRepository.findByAadhaarNumber(input);
+        if (byAadhaar.isPresent()) return byAadhaar.get();
+        List<User> byMobile = userRepository.findByMobileNumber(input);
+        if (byMobile.size() == 1) return byMobile.get(0);
+        if (byMobile.size() > 1) throw new InvalidInputException("Mobile number identifies more than one account");
+        throw new AadhaarNotFoundException(input);
     }
 
     @Override
@@ -92,8 +96,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     public List<DoctorDetailsDTO> getPendingDoctors() {
         return userRepository.findByRoleAndVerificationStatus(Role.DOCTOR.toString(), false)
                 .stream()
-                .map(User::getDoctorDetails)
-                .map(doctorDetails -> modelMapper.map(doctorDetails, DoctorDetailsDTO.class))
+                .map(user -> {
+                    DoctorDetailsDTO details = modelMapper.map(user.getDoctorDetails(), DoctorDetailsDTO.class);
+                    details.setAccountIdentifier(user.getAadhaarNumber());
+                    return details;
+                })
                 .toList();
     }
 

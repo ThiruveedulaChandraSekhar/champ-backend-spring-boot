@@ -8,16 +8,21 @@ import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsRequest;
 import com.capstone.champ.payload.userdetails.UserDetailsResponse;
+import com.capstone.champ.exception.InvalidInputException;
+import com.capstone.champ.exception.MedicineNotFoundException;
 import com.capstone.champ.repository.MedicineRepository;
+import com.capstone.champ.repository.PrescriptionRepository;
 import com.capstone.champ.repository.UserDetailsRepository;
 import com.capstone.champ.repository.UserRepository;
 import com.capstone.champ.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -27,15 +32,18 @@ public class UserServiceImpl implements UserService{
     private final UserDetailsRepository userDetailsRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final PrescriptionRepository prescriptionRepository;
+    private final VisitRepository visitRepository;
     private final MedicineRepository medicineRepository;
+    private final MedicineSafetyService medicineSafetyService;
+    private final PatientHistorySummaryService patientHistorySummaryService;
 
     @Override
     public UserDetailsResponse addUserDetails(String aadhaarNumber, UserDetailsRequest userDetailsRequest) {
         User user = userRepository.findByAadhaarNumber(aadhaarNumber)
                 .orElseThrow(() -> new AadhaarNotFoundException(aadhaarNumber));
+        requirePatient(user);
         UserDetails userDetails = modelMapper.map(userDetailsRequest, UserDetails.class);
-        userDetails.setCreated(LocalDateTime.now());
-        userDetails.setLastUpdated(LocalDateTime.now());
         userDetails.setUser(user);
         user.setUserDetails(userDetails);
         userRepository.save(user);
@@ -47,6 +55,9 @@ public class UserServiceImpl implements UserService{
 
         UserDetails userDetails = userDetailsRepository.findById(dto.getId())
                 .orElseThrow(() -> new UserDetailsNotFoundException());
+        requirePatient(userDetails.getUser());
+        if (dto.getAccountIdentifier() == null || !dto.getAccountIdentifier().equals(userDetails.getUser().getAadhaarNumber()))
+            throw new InvalidInputException("Patient account does not own this profile");
 
         userDetails.setFullName(dto.getFullName());
         userDetails.setGender(dto.getGender());
@@ -69,57 +80,185 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findByAadhaarNumber(aadhaarNumber)
                 .orElseThrow(() -> new AadhaarNotFoundException(aadhaarNumber));
         UserDetails userDetails = user.getUserDetails();
-        return modelMapper.map(userDetails, UserDetailsDTO.class);
+        if (userDetails == null) throw new UserDetailsNotFoundException();
+        requirePatient(user);
+        UserDetailsDTO dto = modelMapper.map(userDetails, UserDetailsDTO.class);
+        dto.setAccountIdentifier(user.getAadhaarNumber());
+        dto.setMobileNumber(user.getMobileNumber());
+        dto.setVerificationStatus(user.getVerificationStatus());
+        if (userDetails.getAddress() != null) {
+            dto.setDoorNumber(userDetails.getAddress().getDoorNumber()); dto.setStreet(userDetails.getAddress().getStreet());
+            dto.setCity(userDetails.getAddress().getCity()); dto.setState(userDetails.getAddress().getState());
+            dto.setPinCode(userDetails.getAddress().getPinCode());
+        }
+        return dto;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public VisitResponse getVisits(String input) {
         User user = userRepository.findByAadhaarNumber(input)
                 .orElseThrow(() -> new AadhaarNotFoundException(input));
-        List<Visit> visits = user.getVisits();
+        requirePatient(user);
+        List<Visit> visits = visitRepository.findByUserId(user.getId());
+        if (!visits.isEmpty()) {
+            List<Long> visitIds = visits.stream().map(Visit::getId).toList();
+            visitRepository.findWithMedicines(user.getId(), visitIds);
+            visitRepository.findWithAllergies(user.getId(), visitIds);
+        }
         List<VisitDTO> visitsDTO = new ArrayList<>();
         for(Visit visit : visits) {
-            VisitDTO temp = modelMapper.map(visit, VisitDTO.class);
-            modelMapper.map(temp, visit);
+            VisitDTO temp = new VisitDTO();
+            temp.setId(visit.getId());
+            temp.setReason(visit.getReason());
+            temp.setIssueDate(visit.getIssueDate());
+            temp.setRecoveredDate(visit.getRecoveredDate());
             List<MedicineDTO> medicineDTO = new ArrayList<>();
-            for(Medicine medicine : visit.getMedicines())
-                medicineDTO.add(modelMapper.map(medicine, MedicineDTO.class));
+            for(Prescription prescription : visit.getMedicines() == null ? Collections.<Prescription>emptyList() : visit.getMedicines()) {
+                MedicineDTO dto = new MedicineDTO();
+                dto.setId(prescription.getId());
+                dto.setMedicineId(prescription.getMedicine() == null ? prescription.getMedicineId() : prescription.getMedicine().getId());
+                dto.setMedicineName(prescription.getMedicine() == null ? prescription.getMedicineName() : prescription.getMedicine().getMedicineName());
+                dto.setDosage(prescription.getDosage());
+                dto.setIsInjection(prescription.getIsInjection());
+                dto.setDuration(prescription.getDuration());
+                dto.setTakeMorning(prescription.getTakeMorning());
+                dto.setTakeAfternoon(prescription.getTakeAfternoon());
+                dto.setTakeEvening(prescription.getTakeEvening());
+                dto.setEaseOfUse(prescription.getEaseOfUse());
+                dto.setUserFeedback(prescription.getUserFeedback());
+                dto.setNote(prescription.getNote());
+                medicineDTO.add(dto);
+            }
             temp.setMedicines(medicineDTO);
+            if (visit.getDiagnosis() != null) {
+                temp.setDiagnosisId(visit.getDiagnosis().getId());
+                temp.setDiagnosisCode(visit.getDiagnosis().getDiagnosisCode());
+                temp.setDiagnosisName(visit.getDiagnosis().getDiagnosisName());
+            }
+            temp.setRecoveryStatus(visit.getRecoveryStatus());
+            temp.setRecoveryConfirmedAt(visit.getRecoveryConfirmedAt());
+            temp.setOutcomeSource(visit.getOutcomeSource());
             List<AllergyDTO> allergyDTOS = new ArrayList<>();
-            for(Allergy allergy : visit.getAllergies())
+            for(Allergy allergy : visit.getAllergies() == null ? Collections.<Allergy>emptyList() : visit.getAllergies())
                 allergyDTOS.add(modelMapper.map(allergy, AllergyDTO.class));
             temp.setAllergies(allergyDTOS);
-            temp.setDoctorDetails(modelMapper.map(visit.getDoctorDetails(), DoctorDetailsDTO.class));
+            if (visit.getDoctorDetails() != null)
+                temp.setDoctorDetails(modelMapper.map(visit.getDoctorDetails(), DoctorDetailsDTO.class));
             visitsDTO.add(temp);
         }
         return new VisitResponse(true, "Successfully got visit details", visitsDTO);
     }
 
     @Override
+    @Transactional
+    public GeneralResponse updateRecovery(String input, Long visitId, RecoveryUpdateRequest request) {
+        User user = userRepository.findByAadhaarNumber(input)
+                .orElseThrow(() -> new AadhaarNotFoundException(input));
+        requirePatient(user);
+        Visit visit = visitRepository.findById(visitId)
+                .filter(candidate -> candidate.getUser() != null && candidate.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new InvalidInputException("visitId"));
+        if (request == null || request.getRecoveryStatus() == null)
+            throw new InvalidInputException("recoveryStatus");
+        visit.setRecoveryStatus(request.getRecoveryStatus());
+        visit.setRecoveredDate(request.getRecoveredDate());
+        visit.setRecoveryConfirmedAt(LocalDateTime.now());
+        visit.setOutcomeSource(request.getOutcomeSource() == null || request.getOutcomeSource().isBlank() ? "PATIENT" : request.getOutcomeSource());
+        if (visit.getRecoveryStatus() == RecoveryStatus.RECOVERED && visit.getRecoveredDate() == null)
+            visit.setRecoveredDate(java.time.LocalDate.now());
+        if (visit.getIssueDate() != null && visit.getRecoveredDate() != null && visit.getRecoveredDate().isBefore(visit.getIssueDate()))
+            throw new InvalidInputException("recoveredDate");
+        visitRepository.save(visit);
+        return new GeneralResponse(true, "Recovery status updated successfully");
+    }
+
+    @Override
     public AllergyResponse getAllergy(String input) {
         User user = userRepository.findByAadhaarNumber(input)
                 .orElseThrow(() -> new AadhaarNotFoundException(input));
+        requirePatient(user);
         List<Allergy> allergies = user.getAllergies();
         List<AllergyDTO> allergyDTOS = new ArrayList<>();
         for(Allergy allergy : allergies) {
             AllergyDTO allergyDTO = modelMapper.map(allergy, AllergyDTO.class);
-            allergyDTO.setDoctorDetails(modelMapper.map(allergy.getDoctorDetails(), DoctorDetailsDTO.class));
+            if (allergy.getDoctorDetails() != null)
+                allergyDTO.setDoctorDetails(modelMapper.map(allergy.getDoctorDetails(), DoctorDetailsDTO.class));
             allergyDTOS.add(allergyDTO);
         }
         return new AllergyResponse(true, "Successfully got allergy details", allergyDTOS);
     }
 
     @Override
+    public MedicineSafetyCheckResponse checkMedicineSafety(String input, MedicineSafetyRequest request) {
+        User user = userRepository.findByAadhaarNumber(input)
+                .orElseThrow(() -> new AadhaarNotFoundException(input));
+        requirePatient(user);
+
+        Medicine medicine = null;
+        if (request != null && request.getMedicineId() != null) {
+            medicine = medicineRepository.findById(request.getMedicineId())
+                    .orElseThrow(() -> new MedicineNotFoundException(request.getMedicineId()));
+        } else if (request != null && request.getMedicineName() != null && !request.getMedicineName().isBlank()) {
+            medicine = new Medicine();
+            medicine.setMedicineName(request.getMedicineName());
+            medicine.setActiveIngredient(request.getActiveIngredient());
+        }
+
+        return medicineSafetyService.evaluateMedicineSafety(user, medicine, request != null ? request.getMedicineName() : null);
+    }
+
+    @Override
+    public PatientHistorySummaryResponse getHistorySummary(String input) {
+        User user = userRepository.findByAadhaarNumber(input)
+                .orElseThrow(() -> new AadhaarNotFoundException(input));
+        requirePatient(user);
+        return patientHistorySummaryService.buildSummary(user);
+    }
+
+    @Override
     public MedicineFeedBackResponse getMedicineFeedback(String medicineName) {
-        List<Medicine> medicines = medicineRepository.findByMedicineNameContainingIgnoreCase(medicineName);
-        if (medicines.isEmpty())
-            return new MedicineFeedBackResponse("Medicines not found with the name " + medicineName, false, null);
+        if (medicineName == null || medicineName.isBlank())
+            throw new InvalidInputException("medicineName");
+
+        Medicine medicine = medicineRepository.findByNormalizedMedicineName(medicineName.trim())
+                .orElseThrow(() -> new MedicineNotFoundException(medicineName.trim()));
+        List<Prescription> prescriptions = prescriptionRepository.findFeedbackByMedicine(
+                medicine.getId(), medicine.getMedicineName());
+
         MedicineFeedBackResponse medicineFeedBackResponse = new MedicineFeedBackResponse();
         medicineFeedBackResponse.setStatus(true);
-        medicineFeedBackResponse.setMessage("Medicine feedbacks retrieved successfully");
+        medicineFeedBackResponse.setMessage("Medicine details retrieved successfully");
         medicineFeedBackResponse.setFeedbacks(new ArrayList<>());
-        for(Medicine medicine : medicines)
-            medicineFeedBackResponse.getFeedbacks().add(new MedicineWithFeedback(medicine.getMedicineName(), medicine.getUserFeedback()));
+        for (Prescription prescription : prescriptions) {
+            if (prescription.getUserFeedback() != null && !prescription.getUserFeedback().isBlank())
+                medicineFeedBackResponse.getFeedbacks().add(new MedicineWithFeedback(
+                        medicine.getMedicineName(), prescription.getUserFeedback()));
+        }
         return medicineFeedBackResponse;
+    }
+
+    @Override
+    public MedicineFeedbackSubmitResponse addMedicineFeedback(String aadhaarNumber, MedicineFeedbackRequest request) {
+        if (request == null || request.getPrescriptionId() == null || request.getMedicineId() == null
+                || request.getFeedback() == null || request.getFeedback().isBlank())
+            throw new InvalidInputException("prescriptionId, medicineId and feedback");
+
+        User user = userRepository.findByAadhaarNumber(aadhaarNumber)
+                .orElseThrow(() -> new AadhaarNotFoundException(aadhaarNumber));
+        requirePatient(user);
+        Prescription prescription = prescriptionRepository
+                .findByIdAndVisitUserIdAndMedicine_Id(request.getPrescriptionId(), user.getId(), request.getMedicineId())
+                .orElseThrow(() -> new MedicineNotFoundException(request.getMedicineId()));
+        prescription.setUserFeedback(request.getFeedback().trim());
+        prescriptionRepository.save(prescription);
+        String medicineName = prescription.getMedicine() == null ? prescription.getMedicineName() : prescription.getMedicine().getMedicineName();
+        return new MedicineFeedbackSubmitResponse(true, "Medicine feedback added successfully", prescription.getId(),
+                request.getMedicineId(), medicineName, prescription.getUserFeedback());
+    }
+
+    private void requirePatient(User user) {
+        if (user == null || !"USER".equals(user.getRole()))
+            throw new InvalidInputException("Account is not a patient");
     }
 }

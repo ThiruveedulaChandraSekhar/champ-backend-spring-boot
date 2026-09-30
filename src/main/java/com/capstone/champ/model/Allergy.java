@@ -20,6 +20,10 @@ public class Allergy {
     private LocalDate date;
     private Short severity;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "allergy_type")
+    private AllergyType allergyType;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

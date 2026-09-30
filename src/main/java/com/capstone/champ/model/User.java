@@ -21,6 +21,7 @@ public class User {
     private String password;
     private String role;
     private Boolean verificationStatus;
+    private Boolean doctorOtpNotificationsEnabled = true;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserDetails userDetails;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +21,7 @@ public class UserDetails {
     private String email;
     private String guardian;
     private String guardianContact;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     private LocalDateTime lastUpdated;
     private LocalDateTime created;
     private String bloodGroup;
@@ -34,5 +35,19 @@ public class UserDetails {
     @OneToOne
     @JoinColumn(name = "user_id", unique = true)
     private User user;
+
+    @PrePersist
+    void initializeTimestamps() {
+        LocalDateTime now = LocalDateTime.now();
+        if (created == null)
+            created = now;
+        if (lastUpdated == null)
+            lastUpdated = now;
+    }
+
+    @PreUpdate
+    void updateTimestamp() {
+        lastUpdated = LocalDateTime.now();
+    }
 
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -19,9 +20,24 @@ public class Visit {
     private LocalDate issueDate;
     private LocalDate recoveredDate;
     private String prescriptionImage;
+    private Double predictedRecoveryDays;
+    private LocalDate predictedRecoveryDate;
+    private String recoveryPredictionStatus;
+    private LocalDateTime recoveryPredictionGeneratedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private RecoveryStatus recoveryStatus = RecoveryStatus.UNKNOWN;
+    private LocalDateTime recoveryConfirmedAt;
+    @Column(length = 50)
+    private String outcomeSource;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "diagnosis_id")
+    private Diagnosis diagnosis;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Medicine> medicines;
+    private List<Prescription> medicines;
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Allergy> allergies;

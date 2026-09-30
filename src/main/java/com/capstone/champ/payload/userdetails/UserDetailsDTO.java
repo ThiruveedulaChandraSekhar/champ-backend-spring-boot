@@ -18,8 +18,16 @@ public class UserDetailsDTO {
     private String email;
     private String guardian;
     private String guardianContact;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     //    private LocalDate lastUpdated;
-    private LocalDate created;
+    private LocalDateTime created;
     private String bloodGroup;
+    private String accountIdentifier;
+    private String mobileNumber;
+    private String doorNumber;
+    private String street;
+    private String city;
+    private String state;
+    private String pinCode;
+    private Boolean verificationStatus;
 }

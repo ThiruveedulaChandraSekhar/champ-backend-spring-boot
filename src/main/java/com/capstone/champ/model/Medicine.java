@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
+@Table(name = "medicine_catalog")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -13,18 +16,22 @@ public class Medicine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String medicineName;
-    private String dosage;
-    private Boolean isInjection;
-    private Integer duration;
-    private Boolean takeMorning;
-    private Boolean takeAfternoon;
-    private Short easeOfUse;
-    private String userFeedback;
-    private Boolean takeEvening;
-    private String note;
 
-    @ManyToOne
-    @JoinColumn(name = "visit_id")
-    private Visit visit;
+    @Column(nullable = false, length = 255)
+    private String medicineName;
+
+    @Column(length = 255)
+    private String activeIngredient;
+
+    @Column(length = 100)
+    private String strength;
+
+    @Column(length = 100)
+    private String dosageForm;
+
+    @Column(length = 50)
+    private String atcCode;
+
+    @OneToMany(mappedBy = "medicine")
+    private List<Prescription> prescriptions;
 }

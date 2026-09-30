@@ -13,4 +13,5 @@ public class LoginResponse {
     private String input;
     private String role;
     private Boolean verificationStatus;
+    private String accountIdentifier;
 }
