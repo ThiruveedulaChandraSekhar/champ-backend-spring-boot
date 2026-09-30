@@ -123,6 +123,23 @@ public class UserServiceImpl implements UserService{
             visitRepository.findWithMedicines(user.getId(), visitIds);
             visitRepository.findWithAllergies(user.getId(), visitIds);
         }
+            return toVisitResponse(visits, true);
+            }
+
+            @Override
+            @Transactional(readOnly = true)
+            public VisitResponse getDoctorOwnVisits(String doctorInput, String patientInput) {
+            User doctor = userRepository.findByAadhaarNumber(doctorInput)
+                .orElseThrow(() -> new AadhaarNotFoundException(doctorInput));
+            User patient = userRepository.findByAadhaarNumber(patientInput)
+                .orElseThrow(() -> new AadhaarNotFoundException(patientInput));
+            if (!"DOCTOR".equals(doctor.getRole())) throw new InvalidInputException("Account is not a doctor");
+            requirePatient(patient);
+            List<Visit> visits = visitRepository.findByUserIdAndDoctorDetailsUserId(patient.getId(), doctor.getId());
+            return toVisitResponse(visits, false);
+            }
+
+            private VisitResponse toVisitResponse(List<Visit> visits, boolean includeProtectedDetails) {
         List<VisitDTO> visitsDTO = new ArrayList<>();
         for(Visit visit : visits) {
             VisitDTO temp = new VisitDTO();
@@ -133,8 +150,9 @@ public class UserServiceImpl implements UserService{
             temp.setPredictedRecoveryDays(visit.getPredictedRecoveryDays());
             temp.setPredictedRecoveryDate(visit.getPredictedRecoveryDate());
             temp.setRecoveryPredictionStatus(visit.getRecoveryPredictionStatus());
-            List<MedicineDTO> medicineDTO = new ArrayList<>();
-            for(Prescription prescription : visit.getMedicines() == null ? Collections.<Prescription>emptyList() : visit.getMedicines()) {
+                List<MedicineDTO> medicineDTO = new ArrayList<>();
+                for(Prescription prescription : includeProtectedDetails && visit.getMedicines() != null
+                    ? visit.getMedicines() : Collections.<Prescription>emptyList()) {
                 MedicineDTO dto = new MedicineDTO();
                 dto.setId(prescription.getId());
                 dto.setMedicineId(prescription.getMedicine() == null ? prescription.getMedicineId() : prescription.getMedicine().getId());
@@ -159,7 +177,8 @@ public class UserServiceImpl implements UserService{
             temp.setRecoveryConfirmedAt(visit.getRecoveryConfirmedAt());
             temp.setOutcomeSource(visit.getOutcomeSource());
             List<AllergyDTO> allergyDTOS = new ArrayList<>();
-            for(Allergy allergy : visit.getAllergies() == null ? Collections.<Allergy>emptyList() : visit.getAllergies())
+                for(Allergy allergy : includeProtectedDetails && visit.getAllergies() != null
+                    ? visit.getAllergies() : Collections.<Allergy>emptyList())
                 allergyDTOS.add(modelMapper.map(allergy, AllergyDTO.class));
             temp.setAllergies(allergyDTOS);
             if (visit.getDoctorDetails() != null)

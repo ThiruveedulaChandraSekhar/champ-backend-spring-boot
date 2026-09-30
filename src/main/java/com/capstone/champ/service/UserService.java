@@ -19,6 +19,7 @@ public interface UserService {
     UserDetailsResponse updateUserDetails(UserDetailsDTO userDetailsDTO);
     UserDetailsDTO getUserDetails(String aadhaarNumber);
     VisitResponse getVisits(String input);
+    VisitResponse getDoctorOwnVisits(String doctorInput, String patientInput);
     GeneralResponse updateRecovery(String input, Long visitId, RecoveryUpdateRequest request);
     AllergyResponse getAllergy(String input);
     MedicineSafetyCheckResponse checkMedicineSafety(String input, MedicineSafetyRequest request);

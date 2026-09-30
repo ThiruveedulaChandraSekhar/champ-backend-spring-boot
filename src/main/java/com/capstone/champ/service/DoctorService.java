@@ -7,6 +7,7 @@ import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsResponse;
 import com.capstone.champ.payload.PatientDirectoryDTO;
+import com.capstone.champ.payload.DoctorMedicineFeedbackDTO;
 import java.util.List;
 
 public interface DoctorService {
@@ -16,4 +17,5 @@ public interface DoctorService {
     GeneralResponse addVisit(String doctor, String patient, VisitRequest visitRequest);
     PatientHistorySummaryResponse getPatientHistorySummary(String doctorInput, String patientInput);
     List<PatientDirectoryDTO> searchPatients(String doctorInput, String query);
+    List<DoctorMedicineFeedbackDTO> getPatientMedicineFeedback(String doctorInput);
 }

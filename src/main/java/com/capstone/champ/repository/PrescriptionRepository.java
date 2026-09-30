@@ -12,6 +12,10 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
     List<Prescription> findByMedicineNameContainingIgnoreCase(String medicineName);
     Optional<Prescription> findByIdAndVisitUserIdAndMedicine_Id(Long id, Long userId, Long medicineId);
 
+    @Query("select p from Prescription p left join fetch p.medicine join fetch p.visit v "
+            + "where p.userFeedback is not null and trim(p.userFeedback) <> '' order by v.issueDate desc, p.id desc")
+    List<Prescription> findAllWithPatientFeedback();
+
     @Query("select p from Prescription p left join fetch p.medicine "
             + "where p.visit.user.id = :userId and (p.medicine.id = :medicineId "
             + "or lower(trim(p.medicineName)) = lower(trim(:medicineName))) order by p.id")

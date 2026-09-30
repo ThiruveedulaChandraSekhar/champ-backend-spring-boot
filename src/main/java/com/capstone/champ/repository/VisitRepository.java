@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface VisitRepository extends JpaRepository<Visit, Long> {
     List<Visit> findByUserId(Long userId);
+    List<Visit> findByUserIdAndDoctorDetailsUserId(Long userId, Long doctorUserId);
 
     @Query("select distinct v from Visit v left join fetch v.medicines m left join fetch m.medicine "
 	    + "where v.user.id = :userId and v.id in :visitIds")

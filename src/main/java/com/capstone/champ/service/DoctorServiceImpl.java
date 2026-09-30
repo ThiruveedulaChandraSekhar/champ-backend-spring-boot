@@ -17,12 +17,14 @@ import com.capstone.champ.payload.PatientHistorySummaryResponse;
 import com.capstone.champ.payload.PrescriptionRequest;
 import com.capstone.champ.payload.VisitRequest;
 import com.capstone.champ.payload.PatientDirectoryDTO;
+import com.capstone.champ.payload.DoctorMedicineFeedbackDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsResponse;
 import com.capstone.champ.repository.DoctorDetailsRepository;
 import com.capstone.champ.repository.DiagnosisRepository;
 import com.capstone.champ.repository.MedicineRepository;
+import com.capstone.champ.repository.PrescriptionRepository;
 import com.capstone.champ.repository.UserRepository;
 import com.capstone.champ.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,7 @@ public class DoctorServiceImpl implements DoctorService{
     private final VisitRepository visitRepository;
     private final DiagnosisRepository diagnosisRepository;
     private final MedicineRepository medicineRepository;
+    private final PrescriptionRepository prescriptionRepository;
     private final MedicineSafetyService medicineSafetyService;
     private final MlPredictionService mlPredictionService;
     private final PatientHistorySummaryService patientHistorySummaryService;
@@ -183,6 +186,18 @@ public class DoctorServiceImpl implements DoctorService{
                         || (user.getMobileNumber() != null && user.getMobileNumber().contains(term)))
                 .map(user -> new PatientDirectoryDTO(user.getAadhaarNumber(), user.getUserDetails().getFullName(), user.getMobileNumber())).toList();
     }
+
+            @Override
+            public List<DoctorMedicineFeedbackDTO> getPatientMedicineFeedback(String doctorInput) {
+            requireDoctor(authenticationService.getUser(doctorInput));
+            return prescriptionRepository.findAllWithPatientFeedback().stream()
+                .map(prescription -> new DoctorMedicineFeedbackDTO(
+                    prescription.getId(),
+                    prescription.getMedicine() == null ? prescription.getMedicineName() : prescription.getMedicine().getMedicineName(),
+                    prescription.getUserFeedback(),
+                    prescription.getVisit() == null ? null : prescription.getVisit().getIssueDate()))
+                .toList();
+            }
 
     private void requireDoctor(User user) {
         requireDoctorAccount(user);

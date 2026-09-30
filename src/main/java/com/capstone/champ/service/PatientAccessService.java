@@ -80,7 +80,10 @@ public class PatientAccessService {
     public boolean hasVerifiedAccess(String doctorInput, String patientInput) {
         User doctor = requireRole(doctorInput, "DOCTOR");
         User patient = requireRole(patientInput, "USER");
-        return requests.findFirstByDoctorIdAndPatientIdAndStatusOrderByCreatedAtDesc(doctor.getId(), patient.getId(), "VERIFIED").isPresent();
+        return requests.findFirstByDoctorIdAndPatientIdAndStatusOrderByCreatedAtDesc(doctor.getId(), patient.getId(), "VERIFIED")
+            .filter(request -> request.getUsedAt() != null && request.getExpiresAt() != null
+                && LocalDateTime.now().isBefore(request.getExpiresAt()))
+            .isPresent();
     }
 
     @Transactional(readOnly = true)

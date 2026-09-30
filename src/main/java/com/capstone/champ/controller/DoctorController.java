@@ -6,6 +6,9 @@ import com.capstone.champ.payload.GeneralResponse;
 import com.capstone.champ.payload.AllergyResponse;
 import com.capstone.champ.payload.VisitResponse;
 import com.capstone.champ.payload.PatientDirectoryDTO;
+import com.capstone.champ.payload.MedicineSafetyRequest;
+import com.capstone.champ.payload.MedicineSafetyCheckResponse;
+import com.capstone.champ.payload.DoctorMedicineFeedbackDTO;
 import com.capstone.champ.payload.userdetails.UserDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsDTO;
 import com.capstone.champ.payload.doctordetails.DoctorDetailsRequest;
@@ -83,10 +86,27 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.searchPatients(doctor, query));
     }
 
+    @GetMapping("/{doctor}/medicine-feedback")
+    public ResponseEntity<java.util.List<DoctorMedicineFeedbackDTO>> getAllPatientMedicineFeedback(@PathVariable String doctor) {
+        return ResponseEntity.ok(doctorService.getPatientMedicineFeedback(doctor));
+    }
+
     @GetMapping("/{doctor}/patient/{patient}/details")
     public ResponseEntity<UserDetailsDTO> getAuthorizedPatientDetails(@PathVariable String doctor, @PathVariable String patient) {
         requireVerifiedAccess(doctor, patient);
         return ResponseEntity.ok(userService.getUserDetails(patient));
+    }
+
+    @GetMapping("/{doctor}/patient/{patient}/access-status")
+    public ResponseEntity<java.util.Map<String, Boolean>> getPatientAccessStatus(@PathVariable String doctor,
+                                                                                  @PathVariable String patient) {
+        return ResponseEntity.ok(java.util.Map.of("verified", patientAccessService.hasVerifiedAccess(doctor, patient)));
+    }
+
+    @GetMapping("/{doctor}/patient/{patient}/own-visits")
+    public ResponseEntity<VisitResponse> getDoctorOwnPatientVisits(@PathVariable String doctor,
+                                                                    @PathVariable String patient) {
+        return ResponseEntity.ok(userService.getDoctorOwnVisits(doctor, patient));
     }
 
     @GetMapping("/{doctor}/patient/{patient}/visits")
@@ -99,6 +119,13 @@ public class DoctorController {
     public ResponseEntity<AllergyResponse> getAuthorizedPatientAllergies(@PathVariable String doctor, @PathVariable String patient) {
         requireVerifiedAccess(doctor, patient);
         return ResponseEntity.ok(userService.getAllergy(patient));
+    }
+
+    @PostMapping("/{doctor}/patient/{patient}/medicine-safety")
+    public ResponseEntity<MedicineSafetyCheckResponse> checkAuthorizedPatientMedicineSafety(
+            @PathVariable String doctor, @PathVariable String patient, @RequestBody MedicineSafetyRequest request) {
+        requireVerifiedAccess(doctor, patient);
+        return ResponseEntity.ok(userService.checkMedicineSafety(patient, request));
     }
 
     private void requireVerifiedAccess(String doctor, String patient) {
