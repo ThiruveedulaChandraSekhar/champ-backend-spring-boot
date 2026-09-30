@@ -178,14 +178,24 @@ public class DoctorServiceImpl implements DoctorService{
     @Override
     public List<PatientDirectoryDTO> searchPatients(String doctorInput, String query) {
         requireDoctor(authenticationService.getUser(doctorInput));
-        String term = query == null ? "" : query.trim().toLowerCase();
-        return userRepository.findAll().stream().filter(user -> "USER".equals(user.getRole()))
-                .filter(user -> user.getUserDetails() != null)
-                .filter(user -> term.isEmpty() || (user.getUserDetails().getFullName() != null && user.getUserDetails().getFullName().toLowerCase().contains(term))
-                        || (user.getAadhaarNumber() != null && user.getAadhaarNumber().contains(term))
-                        || (user.getMobileNumber() != null && user.getMobileNumber().contains(term)))
-                .map(user -> new PatientDirectoryDTO(user.getAadhaarNumber(), user.getUserDetails().getFullName(), user.getMobileNumber())).toList();
+        if (query == null || query.isBlank()) return List.of();
+        return userRepository.findByAadhaarNumberAndRole(query.trim(), "USER")
+            .filter(user -> user.getUserDetails() != null)
+            .map(user -> List.of(new PatientDirectoryDTO(
+                user.getAadhaarNumber(), user.getUserDetails().getFullName(), user.getMobileNumber())))
+            .orElseGet(List::of);
     }
+
+        @Override
+        public List<PatientDirectoryDTO> getDoctorPreviousPatients(String doctorInput) {
+        User doctor = authenticationService.getUser(doctorInput);
+        requireDoctor(doctor);
+        return visitRepository.findDistinctPatientsByDoctorId(doctor.getId()).stream()
+            .filter(patient -> patient.getUserDetails() != null)
+            .map(patient -> new PatientDirectoryDTO(
+                patient.getAadhaarNumber(), patient.getUserDetails().getFullName(), patient.getMobileNumber()))
+            .toList();
+        }
 
             @Override
             public List<DoctorMedicineFeedbackDTO> getPatientMedicineFeedback(String doctorInput) {

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByAadhaarNumber(String aadhaarNumber);
+    Optional<User> findByAadhaarNumberAndRole(String aadhaarNumber, String role);
 
     List<User> findByMobileNumber(String input);
 

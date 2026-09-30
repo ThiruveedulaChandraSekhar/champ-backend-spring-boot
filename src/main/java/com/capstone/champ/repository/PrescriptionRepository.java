@@ -22,4 +22,12 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
     List<Prescription> findFeedbackByMedicineAndPatient(@Param("userId") Long userId,
                                                          @Param("medicineId") Long medicineId,
                                                          @Param("medicineName") String medicineName);
+
+    @Query("select p from Prescription p left join fetch p.medicine left join fetch p.visit v "
+            + "left join fetch v.user u left join fetch u.userDetails "
+            + "where p.userFeedback is not null and trim(p.userFeedback) <> '' "
+            + "and (p.medicine.id = :medicineId or (p.medicine is null "
+            + "and lower(trim(p.medicineName)) = lower(trim(:medicineName)))) order by p.id")
+    List<Prescription> findAllFeedbackByMedicine(@Param("medicineId") Long medicineId,
+                                                  @Param("medicineName") String medicineName);
 }

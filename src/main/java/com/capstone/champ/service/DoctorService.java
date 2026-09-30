@@ -17,5 +17,6 @@ public interface DoctorService {
     GeneralResponse addVisit(String doctor, String patient, VisitRequest visitRequest);
     PatientHistorySummaryResponse getPatientHistorySummary(String doctorInput, String patientInput);
     List<PatientDirectoryDTO> searchPatients(String doctorInput, String query);
+    List<PatientDirectoryDTO> getDoctorPreviousPatients(String doctorInput);
     List<DoctorMedicineFeedbackDTO> getPatientMedicineFeedback(String doctorInput);
 }

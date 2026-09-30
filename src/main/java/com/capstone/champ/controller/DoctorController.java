@@ -86,6 +86,11 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.searchPatients(doctor, query));
     }
 
+    @GetMapping("/{doctor}/patients/previous")
+    public ResponseEntity<java.util.List<PatientDirectoryDTO>> getDoctorPreviousPatients(@PathVariable String doctor) {
+        return ResponseEntity.ok(doctorService.getDoctorPreviousPatients(doctor));
+    }
+
     @GetMapping("/{doctor}/medicine-feedback")
     public ResponseEntity<java.util.List<DoctorMedicineFeedbackDTO>> getAllPatientMedicineFeedback(@PathVariable String doctor) {
         return ResponseEntity.ok(doctorService.getPatientMedicineFeedback(doctor));

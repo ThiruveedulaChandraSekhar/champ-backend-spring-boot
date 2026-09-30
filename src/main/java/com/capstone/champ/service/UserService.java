@@ -26,5 +26,6 @@ public interface UserService {
     PatientHistorySummaryResponse getHistorySummary(String input);
 
     MedicineFeedBackResponse getMedicineFeedback(String aadhaarNumber, String medicineName);
+    MedicineFeedBackResponse getAllMedicineFeedback(Long medicineId);
     MedicineFeedbackSubmitResponse addMedicineFeedback(String aadhaarNumber, MedicineFeedbackRequest request);
 }

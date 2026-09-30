@@ -68,4 +68,15 @@ class UserRecoveryServiceTest {
         assertThrows(InvalidInputException.class, () -> service.updateRecovery("patient-id", 34L, request));
         verify(visits, never()).save(any(Visit.class));
     }
+
+    @Test
+    void recoveredVisitCannotBeReopenedAsActiveTreatment() {
+        visit.setRecoveryStatus(RecoveryStatus.RECOVERED);
+        visit.setRecoveredDate(LocalDate.now());
+        RecoveryUpdateRequest request = new RecoveryUpdateRequest();
+        request.setRecoveryStatus(RecoveryStatus.ONGOING);
+
+        assertThrows(InvalidInputException.class, () -> service.updateRecovery("patient-id", 34L, request));
+        verify(visits, never()).save(any(Visit.class));
+    }
 }

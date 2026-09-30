@@ -199,6 +199,8 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new InvalidInputException("visitId"));
         if (request == null || request.getRecoveryStatus() == null)
             throw new InvalidInputException("recoveryStatus");
+        if (visit.getRecoveryStatus() == RecoveryStatus.RECOVERED && request.getRecoveryStatus() != RecoveryStatus.RECOVERED)
+            throw new InvalidInputException("Recovered visits cannot be reopened as active treatment");
         visit.setRecoveryStatus(request.getRecoveryStatus());
         visit.setRecoveredDate(request.getRecoveredDate());
         visit.setRecoveryConfirmedAt(LocalDateTime.now());
@@ -277,10 +279,29 @@ public class UserServiceImpl implements UserService{
         for (Prescription prescription : prescriptions) {
             if (prescription.getUserFeedback() != null && !prescription.getUserFeedback().isBlank())
                 medicineFeedBackResponse.getFeedbacks().add(new MedicineWithFeedback(
-                        medicine.getMedicineName(), prescription.getUserFeedback()));
+                    medicine.getMedicineName(), prescription.getUserFeedback(), user.getUserDetails() == null
+                    ? "Patient" : user.getUserDetails().getFullName()));
         }
         return medicineFeedBackResponse;
     }
+
+            @Override
+            @Transactional(readOnly = true)
+            public MedicineFeedBackResponse getAllMedicineFeedback(Long medicineId) {
+            Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new MedicineNotFoundException(medicineId));
+            List<Prescription> prescriptions = prescriptionRepository.findAllFeedbackByMedicine(
+                medicine.getId(), medicine.getMedicineName());
+            List<MedicineWithFeedback> feedbacks = prescriptions.stream()
+                .map(prescription -> new MedicineWithFeedback(
+                    prescription.getMedicine() == null ? medicine.getMedicineName() : prescription.getMedicine().getMedicineName(),
+                    prescription.getUserFeedback(),
+                    prescription.getVisit() == null || prescription.getVisit().getUser() == null
+                        || prescription.getVisit().getUser().getUserDetails() == null
+                        ? "Patient" : prescription.getVisit().getUser().getUserDetails().getFullName()))
+                .toList();
+            return new MedicineFeedBackResponse("Medicine feedback retrieved successfully", true, feedbacks);
+            }
 
     @Override
     public MedicineFeedbackSubmitResponse addMedicineFeedback(String aadhaarNumber, MedicineFeedbackRequest request) {

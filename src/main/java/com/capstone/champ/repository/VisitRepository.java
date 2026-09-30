@@ -1,6 +1,7 @@
 package com.capstone.champ.repository;
 
 import com.capstone.champ.model.Visit;
+import com.capstone.champ.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +12,9 @@ import java.util.List;
 public interface VisitRepository extends JpaRepository<Visit, Long> {
     List<Visit> findByUserId(Long userId);
     List<Visit> findByUserIdAndDoctorDetailsUserId(Long userId, Long doctorUserId);
+
+    @Query("select distinct v.user from Visit v join v.doctorDetails details where details.user.id = :doctorId and v.user is not null")
+    List<User> findDistinctPatientsByDoctorId(@Param("doctorId") Long doctorId);
 
     @Query("select distinct v from Visit v left join fetch v.medicines m left join fetch m.medicine "
 	    + "where v.user.id = :userId and v.id in :visitIds")

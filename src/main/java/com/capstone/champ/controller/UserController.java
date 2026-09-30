@@ -107,6 +107,13 @@ public class UserController {
         return new ResponseEntity<>(userService.getMedicineFeedback(accountId, medicineName), HttpStatus.OK);
     }
 
+    @GetMapping("/medicine-feedback/{medicineId}/all")
+    @Operation(summary = "Get all feedback for a medicine", description = "Returns every text feedback record associated with the specified medicine.")
+    public ResponseEntity<MedicineFeedBackResponse> getAllMedicineFeedback(@PathVariable Long medicineId,
+            @RequestHeader(AccountOwnershipInterceptor.ACCOUNT_HEADER) String accountId) {
+        return ResponseEntity.ok(userService.getAllMedicineFeedback(medicineId));
+    }
+
     @PostMapping("/medicine-feedback/{input}")
     public ResponseEntity<MedicineFeedbackSubmitResponse> addMedicineFeedback(@PathVariable String input,
                                                                           @RequestBody MedicineFeedbackRequest request) {
