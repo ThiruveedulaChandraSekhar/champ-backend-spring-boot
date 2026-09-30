@@ -129,7 +129,6 @@ public class DoctorServiceImpl implements DoctorService{
                 prescription.setTakeMorning(prescriptionRequest.getTakeMorning());
                 prescription.setTakeAfternoon(prescriptionRequest.getTakeAfternoon());
                 prescription.setTakeEvening(prescriptionRequest.getTakeEvening());
-                prescription.setEaseOfUse(prescriptionRequest.getEaseOfUse());
                 prescription.setUserFeedback(prescriptionRequest.getUserFeedback());
                 prescription.setNote(prescriptionRequest.getNote());
                 prescription.setVisit(visit);

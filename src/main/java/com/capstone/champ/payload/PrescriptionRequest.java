@@ -15,7 +15,6 @@ public class PrescriptionRequest {
     private Boolean takeMorning;
     private Boolean takeAfternoon;
     private Boolean takeEvening;
-    private Short easeOfUse;
     private String userFeedback;
     private String note;
 }

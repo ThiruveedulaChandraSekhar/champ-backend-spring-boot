@@ -67,15 +67,32 @@ public class UserServiceImpl implements UserService{
         userDetails.setGuardianContact(dto.getGuardianContact());
         userDetails.setDateOfBirth(dto.getDateOfBirth());
         userDetails.setBloodGroup(dto.getBloodGroup());
+        User user = userDetails.getUser();
+        if (dto.getMobileNumber() != null) user.setMobileNumber(dto.getMobileNumber());
+
+        if (dto.getDoorNumber() != null || dto.getStreet() != null || dto.getCity() != null
+                || dto.getState() != null || dto.getPinCode() != null) {
+            Address address = userDetails.getAddress();
+            if (address == null) address = new Address();
+            if (dto.getDoorNumber() != null) address.setDoorNumber(dto.getDoorNumber());
+            if (dto.getStreet() != null) address.setStreet(dto.getStreet());
+            if (dto.getCity() != null) address.setCity(dto.getCity());
+            if (dto.getState() != null) address.setState(dto.getState());
+            if (dto.getPinCode() != null) address.setPinCode(dto.getPinCode());
+            address.setUserDetails(userDetails);
+            userDetails.setAddress(address);
+        }
 
         userDetails.setLastUpdated(LocalDateTime.now());
 
         userDetailsRepository.save(userDetails);
+        userRepository.save(user);
 
         return new UserDetailsResponse(true, "User details updated successfully");
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetailsDTO getUserDetails(String aadhaarNumber) {
         User user = userRepository.findByAadhaarNumber(aadhaarNumber)
                 .orElseThrow(() -> new AadhaarNotFoundException(aadhaarNumber));
@@ -113,6 +130,9 @@ public class UserServiceImpl implements UserService{
             temp.setReason(visit.getReason());
             temp.setIssueDate(visit.getIssueDate());
             temp.setRecoveredDate(visit.getRecoveredDate());
+            temp.setPredictedRecoveryDays(visit.getPredictedRecoveryDays());
+            temp.setPredictedRecoveryDate(visit.getPredictedRecoveryDate());
+            temp.setRecoveryPredictionStatus(visit.getRecoveryPredictionStatus());
             List<MedicineDTO> medicineDTO = new ArrayList<>();
             for(Prescription prescription : visit.getMedicines() == null ? Collections.<Prescription>emptyList() : visit.getMedicines()) {
                 MedicineDTO dto = new MedicineDTO();
@@ -125,7 +145,6 @@ public class UserServiceImpl implements UserService{
                 dto.setTakeMorning(prescription.getTakeMorning());
                 dto.setTakeAfternoon(prescription.getTakeAfternoon());
                 dto.setTakeEvening(prescription.getTakeEvening());
-                dto.setEaseOfUse(prescription.getEaseOfUse());
                 dto.setUserFeedback(prescription.getUserFeedback());
                 dto.setNote(prescription.getNote());
                 medicineDTO.add(dto);
@@ -174,11 +193,12 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AllergyResponse getAllergy(String input) {
         User user = userRepository.findByAadhaarNumber(input)
                 .orElseThrow(() -> new AadhaarNotFoundException(input));
         requirePatient(user);
-        List<Allergy> allergies = user.getAllergies();
+        List<Allergy> allergies = user.getAllergies() == null ? Collections.emptyList() : user.getAllergies();
         List<AllergyDTO> allergyDTOS = new ArrayList<>();
         for(Allergy allergy : allergies) {
             AllergyDTO allergyDTO = modelMapper.map(allergy, AllergyDTO.class);
@@ -217,14 +237,19 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public MedicineFeedBackResponse getMedicineFeedback(String medicineName) {
+        @Transactional(readOnly = true)
+        public MedicineFeedBackResponse getMedicineFeedback(String aadhaarNumber, String medicineName) {
         if (medicineName == null || medicineName.isBlank())
             throw new InvalidInputException("medicineName");
 
+        User user = userRepository.findByAadhaarNumber(aadhaarNumber)
+            .orElseThrow(() -> new AadhaarNotFoundException(aadhaarNumber));
+        requirePatient(user);
+
         Medicine medicine = medicineRepository.findByNormalizedMedicineName(medicineName.trim())
                 .orElseThrow(() -> new MedicineNotFoundException(medicineName.trim()));
-        List<Prescription> prescriptions = prescriptionRepository.findFeedbackByMedicine(
-                medicine.getId(), medicine.getMedicineName());
+        List<Prescription> prescriptions = prescriptionRepository.findFeedbackByMedicineAndPatient(
+            user.getId(), medicine.getId(), medicine.getMedicineName());
 
         MedicineFeedBackResponse medicineFeedBackResponse = new MedicineFeedBackResponse();
         medicineFeedBackResponse.setStatus(true);

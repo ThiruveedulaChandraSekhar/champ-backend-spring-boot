@@ -1,6 +1,5 @@
 package com.capstone.champ.controller;
 
-import com.capstone.champ.payload.GeneralResponse;
 import com.capstone.champ.payload.authentication.LoginRequest;
 import com.capstone.champ.payload.authentication.LoginResponse;
 import com.capstone.champ.payload.authentication.SignupRequest;
@@ -32,7 +31,7 @@ public class AuthenticationController {
         @Operation(summary = "Register an account", description = "Creates an unverified account using an Aadhaar number, mobile number, and password.")
         @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Account created", content = @Content(schema = @Schema(implementation = SignupResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Aadhaar number already exists", content = @Content(schema = @Schema(implementation = com.capstone.champ.payload.ExceptionResponse.class)))
+            @ApiResponse(responseCode = "409", description = "Aadhaar number already exists", content = @Content(schema = @Schema(implementation = com.capstone.champ.payload.ExceptionResponse.class)))
         })
     public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest signupRequest) {
         return new ResponseEntity<>(authenticationService.signup(signupRequest), HttpStatus.CREATED);
@@ -61,16 +60,4 @@ public class AuthenticationController {
         return new ResponseEntity<>(authenticationService.login(loginRequest), HttpStatus.OK);
     }
 
-    @PostMapping("/role/{input}/{role}")
-        @Operation(summary = "Assign a role", description = "Assigns the USER or DOCTOR role to an existing account.")
-        @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Role assigned", content = @Content(schema = @Schema(implementation = GeneralResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid account identifier", content = @Content(schema = @Schema(implementation = com.capstone.champ.payload.ExceptionResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(schema = @Schema(implementation = com.capstone.champ.payload.ExceptionResponse.class)))
-        })
-        @Parameter(name = "input", in = ParameterIn.PATH, required = true, description = "Aadhaar number or mobile number")
-        @Parameter(name = "role", in = ParameterIn.PATH, required = true, description = "Role to assign: USER or DOCTOR")
-    public ResponseEntity<GeneralResponse> addRole(@PathVariable String input, @PathVariable String role) {
-        return new ResponseEntity<>(authenticationService.addRole(input, role), HttpStatus.CREATED);
-    }
 }

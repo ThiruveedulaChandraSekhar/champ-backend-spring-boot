@@ -12,4 +12,6 @@ public class SignupResponse {
     private String message;
     private String aadhaarNumber;
     private String mobileNumber;
+    private String role;
+    private String fullName;
 }

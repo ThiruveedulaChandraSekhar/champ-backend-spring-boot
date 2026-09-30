@@ -39,10 +39,9 @@ public class AccountOwnershipInterceptor implements HandlerInterceptor {
             String routePatient = first(variables, "patientAccountId");
             if (routePatient != null && !accountId.equals(routePatient)) return reject(response, 403, "Patient account does not own this operation");
         } else if (path.startsWith("/user/")) {
-            boolean aggregateFeedback = path.startsWith("/user/medicine-feed-back/");
-            if (!aggregateFeedback && !"USER".equals(account.getRole())) return reject(response, 403, "Patient account is required");
+            if (!"USER".equals(account.getRole())) return reject(response, 403, "Patient account is required");
             String routePatient = first(variables, "input");
-            if (!aggregateFeedback && routePatient != null && !accountId.equals(routePatient))
+            if (routePatient != null && !accountId.equals(routePatient))
                 return reject(response, 403, "Patient account does not own this record");
         } else if (path.startsWith("/admin/")) {
             if (!"ADMIN".equals(account.getRole())) return reject(response, 403, "Administrator account is required");

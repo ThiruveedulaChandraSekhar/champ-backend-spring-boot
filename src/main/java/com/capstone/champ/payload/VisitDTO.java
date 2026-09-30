@@ -17,6 +17,9 @@ public class VisitDTO {
     private String reason;
     private LocalDate issueDate;
     private LocalDate recoveredDate;
+    private Double predictedRecoveryDays;
+    private LocalDate predictedRecoveryDate;
+    private String recoveryPredictionStatus;
     private Long diagnosisId;
     private String diagnosisCode;
     private String diagnosisName;

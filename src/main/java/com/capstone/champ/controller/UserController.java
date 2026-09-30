@@ -102,8 +102,9 @@ public class UserController {
     @Operation(summary = "Get medicine feedback", description = "Returns feedback recorded for prescriptions whose medicine name contains the supplied text.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Feedback result returned", content = @Content(schema = @Schema(implementation = MedicineFeedBackResponse.class)))})
     @Parameter(name = "medicineName", in = ParameterIn.PATH, required = true, description = "Medicine name search text")
-    public ResponseEntity<MedicineFeedBackResponse> getMedicineFeedback(@PathVariable String medicineName) {
-        return new ResponseEntity<>(userService.getMedicineFeedback(medicineName), HttpStatus.OK);
+    public ResponseEntity<MedicineFeedBackResponse> getMedicineFeedback(@PathVariable String medicineName,
+            @RequestHeader(AccountOwnershipInterceptor.ACCOUNT_HEADER) String accountId) {
+        return new ResponseEntity<>(userService.getMedicineFeedback(accountId, medicineName), HttpStatus.OK);
     }
 
     @PostMapping("/medicine-feedback/{input}")

@@ -14,4 +14,7 @@ public class LoginResponse {
     private String role;
     private Boolean verificationStatus;
     private String accountIdentifier;
+    private String mobileNumber;
+    private String fullName;
+    private Long profileId;
 }

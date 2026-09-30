@@ -16,7 +16,6 @@ public class MedicineDTO {
     private Integer duration;
     private Boolean takeMorning;
     private Boolean takeAfternoon;
-    private Short easeOfUse;
     private String userFeedback;
     private Boolean takeEvening;
     private String note;

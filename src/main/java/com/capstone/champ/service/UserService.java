@@ -24,6 +24,6 @@ public interface UserService {
     MedicineSafetyCheckResponse checkMedicineSafety(String input, MedicineSafetyRequest request);
     PatientHistorySummaryResponse getHistorySummary(String input);
 
-    MedicineFeedBackResponse getMedicineFeedback(String medicineName);
+    MedicineFeedBackResponse getMedicineFeedback(String aadhaarNumber, String medicineName);
     MedicineFeedbackSubmitResponse addMedicineFeedback(String aadhaarNumber, MedicineFeedbackRequest request);
 }
