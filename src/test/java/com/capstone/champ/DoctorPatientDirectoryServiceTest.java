@@ -26,21 +26,25 @@ import static org.mockito.Mockito.*;
 
 class DoctorPatientDirectoryServiceTest {
     private UserRepository users;
+    private VisitRepository visits;
     private AuthenticationService authentication;
+    private PatientAccessService patientAccess;
     private DoctorServiceImpl service;
 
     @BeforeEach
     void setUp() {
         users = mock(UserRepository.class);
         authentication = mock(AuthenticationService.class);
-        VisitRepository visits = mock(VisitRepository.class);
+        visits = mock(VisitRepository.class);
+        patientAccess = mock(PatientAccessService.class);
         service = new DoctorServiceImpl(mock(DoctorDetailsRepository.class), authentication, mock(ModelMapper.class), users,
                 visits, mock(DiagnosisRepository.class), mock(MedicineRepository.class), mock(PrescriptionRepository.class),
                 mock(MedicineSafetyService.class), mock(MlPredictionService.class), mock(com.capstone.champ.service.PatientHistorySummaryService.class),
-                mock(PatientAccessService.class));
+            patientAccess);
 
         User doctor = new User();
         doctor.setRole("DOCTOR");
+        doctor.setVerificationStatus(false);
         doctor.setDoctorDetails(new DoctorDetails());
         when(authentication.getUser("doctor-aadhaar")).thenReturn(doctor);
     }
@@ -49,6 +53,8 @@ class DoctorPatientDirectoryServiceTest {
     void searchesOnlyTheExactAadhaarAndNeverLoadsAllUsers() {
         User patient = new User();
         patient.setRole("USER");
+        patient.setVerificationStatus(false);
+        patient.setId(42L);
         patient.setAadhaarNumber("123456789012");
         UserDetails details = new UserDetails();
         details.setFullName("Patient A");
@@ -58,6 +64,7 @@ class DoctorPatientDirectoryServiceTest {
         var result = service.searchPatients("doctor-aadhaar", "123456789012");
 
         assertEquals(1, result.size());
+        assertEquals(42L, result.getFirst().getId());
         assertEquals("123456789012", result.getFirst().getAccountIdentifier());
         verify(users).findByAadhaarNumberAndRole("123456789012", "USER");
         verify(users, never()).findAll();
@@ -70,5 +77,32 @@ class DoctorPatientDirectoryServiceTest {
         assertEquals(0, result.size());
         verify(users, never()).findAll();
         verify(users, never()).findByAadhaarNumberAndRole(anyString(), anyString());
+    }
+
+    @Test
+    void recordsVisitForUnverifiedPatientUsingItsDatabaseId() {
+        User doctor = new User();
+        doctor.setId(7L);
+        doctor.setAadhaarNumber("doctor-aadhaar");
+        doctor.setRole("DOCTOR");
+        doctor.setVerificationStatus(false);
+        doctor.setDoctorDetails(new DoctorDetails());
+
+        User patient = new User();
+        patient.setId(42L);
+        patient.setAadhaarNumber("123456789012");
+        patient.setRole("USER");
+        patient.setVerificationStatus(false);
+
+        when(authentication.getUser("doctor-aadhaar")).thenReturn(doctor);
+        when(users.findById(42L)).thenReturn(Optional.of(patient));
+        when(patientAccess.hasVerifiedAccess("doctor-aadhaar", "123456789012")).thenReturn(true);
+
+        service.addVisitByPatientId("doctor-aadhaar", 42L, new com.capstone.champ.payload.VisitRequest());
+
+        var savedVisit = org.mockito.ArgumentCaptor.forClass(com.capstone.champ.model.Visit.class);
+        verify(visits, times(2)).save(savedVisit.capture());
+        assertEquals(patient, savedVisit.getAllValues().getFirst().getUser());
+        verify(users).findById(42L);
     }
 }

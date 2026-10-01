@@ -93,6 +93,20 @@ public class DoctorServiceImpl implements DoctorService{
 
         User doctorUser = authenticationService.getUser(doctor);
         User patientUser = authenticationService.getUser(patient);
+        return createVisit(doctorUser, patientUser, doctor, patient, visitRequest);
+        }
+
+        @Override
+        public GeneralResponse addVisitByPatientId(String doctor, Long patientId, VisitRequest visitRequest) {
+        User doctorUser = authenticationService.getUser(doctor);
+        User patientUser = userRepository.findById(patientId)
+            .orElseThrow(() -> new InvalidInputException("patientId"));
+        return createVisit(doctorUser, patientUser, doctor,
+            patientUser.getAadhaarNumber(), visitRequest);
+        }
+
+        private GeneralResponse createVisit(User doctorUser, User patientUser, String doctor, String patient,
+                         VisitRequest visitRequest) {
         requireDoctor(doctorUser);
         if (!"USER".equals(patientUser.getRole())) throw new InvalidInputException("Account is not a patient");
         if (!patientAccessService.hasVerifiedAccess(doctor, patient)) throw new InvalidInputException("Verified patient access is required");
@@ -182,7 +196,7 @@ public class DoctorServiceImpl implements DoctorService{
         return userRepository.findByAadhaarNumberAndRole(query.trim(), "USER")
             .filter(user -> user.getUserDetails() != null)
             .map(user -> List.of(new PatientDirectoryDTO(
-                user.getAadhaarNumber(), user.getUserDetails().getFullName(), user.getMobileNumber())))
+                user.getId(), user.getAadhaarNumber(), user.getUserDetails().getFullName(), user.getMobileNumber())))
             .orElseGet(List::of);
     }
 
@@ -193,7 +207,7 @@ public class DoctorServiceImpl implements DoctorService{
         return visitRepository.findDistinctPatientsByDoctorId(doctor.getId()).stream()
             .filter(patient -> patient.getUserDetails() != null)
             .map(patient -> new PatientDirectoryDTO(
-                patient.getAadhaarNumber(), patient.getUserDetails().getFullName(), patient.getMobileNumber()))
+                patient.getId(), patient.getAadhaarNumber(), patient.getUserDetails().getFullName(), patient.getMobileNumber()))
             .toList();
         }
 

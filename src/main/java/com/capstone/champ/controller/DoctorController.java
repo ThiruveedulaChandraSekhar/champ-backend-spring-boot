@@ -75,6 +75,13 @@ public class DoctorController {
         return new ResponseEntity<>(doctorService.addVisit(doctor, patient, visitRequest), HttpStatus.CREATED);
     }
 
+    @PostMapping("/{doctor}/patients/{patientId}/visit")
+    @Operation(summary = "Record a patient visit by database ID", description = "Creates a visit for the patient identified by the persisted user ID.")
+    public ResponseEntity<?> addVisitByPatientId(@PathVariable String doctor, @PathVariable Long patientId,
+                                                   @RequestBody VisitRequest visitRequest) {
+        return new ResponseEntity<>(doctorService.addVisitByPatientId(doctor, patientId, visitRequest), HttpStatus.CREATED);
+    }
+
     @GetMapping("/history/{doctor}/{patient}")
     @Operation(summary = "Get patient history summary", description = "Returns a compact visit, diagnosis, medicine, allergy and recovery summary for the nominated patient.")
     public ResponseEntity<PatientHistorySummaryResponse> getPatientHistorySummary(@PathVariable String doctor, @PathVariable String patient) {
